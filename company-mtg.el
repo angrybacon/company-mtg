@@ -56,8 +56,8 @@ You can set this variable to `company-mtg-match-fuzzy' or define your own functi
 ;;;; Functions
 
 
-(defun company-mtg-match-fuzzy (prefix candidate)
-  (cl-subsetp (string-to-list prefix) (string-to-list candidate)))
+(defun company-mtg-match-fuzzy (prefix string &optional ignore-case)
+  (cl-subsetp (string-to-list prefix) (string-to-list string)))
 
 (defvar company-mtg-candidates nil "Store candidates after fetching cards.")
 
@@ -98,7 +98,7 @@ See https://mtgjson.com/."
     (prefix (and (eq major-mode 'mtg-deck-mode) (company-grab-symbol)))
     (candidates
      (cl-remove-if-not
-      (lambda (c) (company-mtg-match-fuzzy argument c))
+      (lambda (c) (funcall company-mtg-match-function argument c t))
       company-mtg-candidates))))
 
 ;; (add-to-list 'company-backends 'company-mtg)
