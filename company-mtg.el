@@ -95,12 +95,15 @@ See https://mtgjson.com/."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-mtg))
-    (prefix (and (eq major-mode 'mtg-deck-mode) (company-grab-symbol)))
+    (prefix (and (eq major-mode 'mtg-deck-mode)
+                 (company-grab-line "^\\([1-9] \\)?\\(.+\\)" 2)))
     (candidates
      (cl-remove-if-not
       (lambda (c) (funcall company-mtg-match-function argument c t))
       company-mtg-candidates))))
 
+;; (setq company-mtg-match-function 'string-prefix-p)
+;; (setq company-mtg-match-function 'company-mtg-match-fuzzy)
 ;; (add-to-list 'company-backends 'company-mtg)
 
 (provide 'company-mtg)
