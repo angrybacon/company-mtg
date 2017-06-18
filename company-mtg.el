@@ -69,8 +69,8 @@ See https://mtgjson.com/."
   (interactive)
   (setq company-mtg-candidates nil)
   (dolist (card (json-read-file company-mtg-data-file))
-    (let* ((name (symbol-name (car card)))
-           (data (cdr card)))
+    (let ((name (symbol-name (car card)))
+          (data (cdr card)))
       (add-text-properties 0 1
                            `(:layout
                              ,(cdr (assoc 'layout data))
@@ -88,7 +88,8 @@ See https://mtgjson.com/."
                              :color-identity ,(cdr (assoc 'layout data)))
                            name)
       (push name company-mtg-candidates)))
-  (setq company-mtg-candidates (nreverse company-mtg-candidates)))
+  (setq company-mtg-candidates (nreverse company-mtg-candidates))
+  (message "Company-mtg: loaded %s" company-mtg-data-file))
 
 ;;;###autoload
 (defun company-mtg (command &optional argument &rest ignored)
