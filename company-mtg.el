@@ -41,6 +41,11 @@
   :group 'company
   :prefix "company-mtg-")
 
+(defcustom company-mtg-annotation-function 'company-mtg-annotation-mana
+  "The function to use to annotate candidates."
+  :group 'company-mtg
+  :type 'function)
+
 (defcustom company-mtg-data-file "AllCards.json"
   "The file to read data from. Should be a JSON file."
   :group 'company-mtg
@@ -55,6 +60,11 @@ You can set this variable to `company-mtg-match-fuzzy' or define your own functi
 
 ;;;; Functions
 
+;; (require 'lui-format)
+(defun company-mtg-annotation-mana (candidate)
+  (let* ((mana-cost (get-text-property 0 :mana-cost candidate))
+         (result (when mana-cost (format " %s" mana-cost))))
+    result))
 
 (defun company-mtg-match-fuzzy (prefix string &optional ignore-case)
   (cl-subsetp (string-to-list prefix) (string-to-list string)))
@@ -101,7 +111,8 @@ See https://mtgjson.com/."
     (candidates
      (cl-remove-if-not
       (lambda (c) (funcall company-mtg-match-function argument c t))
-      company-mtg-candidates))))
+      company-mtg-candidates))
+    (annotation (funcall company-mtg-annotation-function argument))))
 
 ;; (setq company-mtg-match-function 'string-prefix-p)
 ;; (setq company-mtg-match-function 'company-mtg-match-fuzzy)
