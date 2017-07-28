@@ -42,6 +42,14 @@
   :group 'company
   :prefix "company-mtg-")
 
+(defcustom company-mtg-annotate-function 'company-mtg-annotate-mana
+  "The display function to append company annotation at the end of candidates.
+See `company-mtg-annotate-mana' for more details on the implementation of a
+custom function."
+  :group 'company-mtg
+  :type 'function)
+
+
 (defcustom company-mtg-data-file (concat mtg-directory "AllCards.json")
   "The file to read data from. Should be a JSON file."
   :group 'company-mtg
@@ -60,6 +68,11 @@ function."
 
 (defun company-mtg-match-fuzzy (prefix candidate)
   (cl-subsetp (string-to-list prefix) (string-to-list candidate)))
+
+(defun company-mtg-annotate-mana (candidate)
+  (let ((mana (get-text-property 0 :mana candidate)))
+    (when mana (format " %s" mana))))
+
 
 ;;;; Commands
 
@@ -110,7 +123,8 @@ See https://mtgjson.com/."
     (candidates
      (cl-remove-if-not
       (lambda (c) (company-mtg-match-fuzzy argument c))
-      company-mtg-cards))))
+      company-mtg-cards))
+    (annotation (funcall company-mtg-annotate-function argument))))
 
 ;; (company-mtg-load)
 ;; (add-to-list 'company-backends 'company-mtg)
