@@ -31,6 +31,7 @@
 (require 'cl-lib)
 (require 'company)
 (require 'json)
+(require 'mtg)
 
 
 ;;;; Variables
@@ -41,14 +42,15 @@
   :group 'company
   :prefix "company-mtg-")
 
-(defcustom company-mtg-data-file "AllCards.json"
+(defcustom company-mtg-data-file (concat mtg-directory "AllCards.json")
   "The file to read data from. Should be a JSON file."
   :group 'company-mtg
-  :type 'string)
+  :type 'file)
 
 (defcustom company-mtg-match-function 'string-prefix-p
   "The matching function to use when finding candidates.
-You can set this variable to `company-mtg-match-fuzzy' or define your own function."
+You can set this variable to `company-mtg-match-fuzzy' or define your own
+function."
   :group 'company-mtg
   :type 'function)
 
@@ -59,18 +61,20 @@ You can set this variable to `company-mtg-match-fuzzy' or define your own functi
 (defun company-mtg-match-fuzzy (prefix candidate)
   (cl-subsetp (string-to-list prefix) (string-to-list candidate)))
 
-(defvar company-mtg-candidates nil "Store candidates after fetching cards.")
+;;;; Commands
+
+
+(defvar company-mtg-cards nil "Store candidates.")
 
 ;;;###autoload
-(defun company-mtg-load-candidates ()
+(defun company-mtg-load-cards ()
   "Read data from JSON, format it to be company-compatible and store it inside
-`company-mtg-candidates'.
+`company-mtg-cards'.
+
 See https://mtgjson.com/."
   (interactive)
-  (setq company-mtg-candidates nil)
+  (setq company-mtg-cards nil)
   (dolist (card (json-read-file company-mtg-data-file))
-    (let* ((name (symbol-name (car card)))
-           (data (cdr card)))
       (add-text-properties 0 1
                            '(:layout
                              (cdr (assoc 'layout data))
@@ -86,9 +90,16 @@ See https://mtgjson.com/."
                              :toughness (cdr (assoc 'toughness data))
                              :imageName (cdr (assoc 'imageName data))
                              :colorIdentity (cdr (assoc 'layout data)))
+    (let ((name (symbol-name (car card)))
+          (data (cdr card)))
                            name)
-      (push name company-mtg-candidates)))
-  (setq company-mtg-candidates (nreverse company-mtg-candidates)))
+      (push name company-mtg-cards)))
+  (setq company-mtg-cards (nreverse company-mtg-cards)))
+
+;;;###autoload
+(defun company-mtg-load ()
+  (interactive)
+  (company-mtg-load-cards))
 
 ;;;###autoload
 (defun company-mtg (command &optional argument &rest ignored)
@@ -99,8 +110,9 @@ See https://mtgjson.com/."
     (candidates
      (cl-remove-if-not
       (lambda (c) (company-mtg-match-fuzzy argument c))
-      company-mtg-candidates))))
+      company-mtg-cards))))
 
+;; (company-mtg-load)
 ;; (add-to-list 'company-backends 'company-mtg)
 
 (provide 'company-mtg)
