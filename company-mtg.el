@@ -28,7 +28,7 @@
 ;;; Code:
 
 
-(require 'cl-lib)
+(require 'cl-seq)
 (require 'company)
 (require 'json)
 (require 'mtg)
