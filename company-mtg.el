@@ -49,7 +49,6 @@ custom function."
   :group 'company-mtg
   :type 'function)
 
-
 (defcustom company-mtg-data-file (concat mtg-directory "AllCards.json")
   "The file to read data from. Should be a JSON file."
   :group 'company-mtg
@@ -66,12 +65,12 @@ function."
 ;;;; Functions
 
 
-(defun company-mtg-match-fuzzy (prefix candidate)
-  (cl-subsetp (string-to-list prefix) (string-to-list candidate)))
-
 (defun company-mtg-annotate-mana (candidate)
   (let ((mana (get-text-property 0 :mana candidate)))
     (when mana (format " %s" mana))))
+
+(defun company-mtg-match-fuzzy (prefix string &optional ignore-case)
+  (cl-subsetp (string-to-list prefix) (string-to-list string)))
 
 
 ;;;; Commands
@@ -94,7 +93,6 @@ See https://mtgjson.com/."
                                  ,(cdr (assoc 'cmc data))
                                  :colors ,(cdr (assoc 'colors data))
                                  :identity ,(cdr (assoc 'colorIdentity data))
-                                 :image ,(cdr (assoc 'imageName data))
                                  :layout ,(cdr (assoc 'layout data))
                                  :mana ,(cdr (assoc 'manaCost data))
                                  :name ,(cdr (assoc 'name data))
@@ -127,6 +125,7 @@ See https://mtgjson.com/."
 
 ;; (company-mtg-load)
 ;; (add-to-list 'company-backends 'company-mtg)
+
 
 (provide 'company-mtg)
 ;;; company-mtg.el ends here
