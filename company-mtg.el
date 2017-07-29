@@ -117,7 +117,8 @@ See https://mtgjson.com/."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-mtg))
-    (prefix (and (eq major-mode 'mtg-deck-mode) (company-grab-symbol)))
+    (prefix (and (eq major-mode 'mtg-deck-mode)
+                 (company-grab-line "^\\([1-9] \\)?\\(.+\\)" 2)))
     (candidates
      (cl-remove-if-not
       (lambda (c) (company-mtg-match-fuzzy argument c))
