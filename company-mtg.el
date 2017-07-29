@@ -104,7 +104,8 @@ See https://mtgjson.com/."
                                  :types ,(cdr (assoc 'types data)))
                            name)
       (push name company-mtg-cards)))
-  (setq company-mtg-cards (nreverse company-mtg-cards)))
+  (setq company-mtg-cards (nreverse company-mtg-cards))
+  (message "Company-mtg: loaded %s" company-mtg-data-file))
 
 ;;;###autoload
 (defun company-mtg-load ()
