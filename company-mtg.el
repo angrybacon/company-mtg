@@ -121,7 +121,7 @@ See https://mtgjson.com/."
                  (company-grab-line "^\\([1-9] \\)?\\(.+\\)" 2)))
     (candidates
      (cl-remove-if-not
-      (lambda (c) (company-mtg-match-fuzzy argument c))
+      (lambda (c) (funcall company-mtg-match-function argument c t))
       company-mtg-cards))
     (annotation (funcall company-mtg-annotate-function argument))))
 
