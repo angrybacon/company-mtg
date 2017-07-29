@@ -64,7 +64,6 @@ function."
 
 ;;;; Functions
 
-
 (defun company-mtg-annotate-mana (candidate)
   (let ((mana (get-text-property 0 :mana candidate)))
     (when mana (format " %s" mana))))
@@ -125,7 +124,6 @@ See https://mtgjson.com/."
       company-mtg-cards))
     (annotation (funcall company-mtg-annotate-function argument))))
 
-;; (company-mtg-load)
 ;; (add-to-list 'company-backends 'company-mtg)
 
 
