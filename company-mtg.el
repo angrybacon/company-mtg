@@ -66,7 +66,18 @@ function."
 
 (defun company-mtg-annotate-mana (candidate)
   (let ((mana (get-text-property 0 :mana candidate)))
-    (when mana (format " %s" mana))))
+    (when mana (concat " " (company-mtg-format mana)))))
+
+(defun company-mtg-format (string)
+  (dolist (icon `(("{W}" ,(mana "w"))
+                  ("{U}" ,(mana "u"))
+                  ("{B}" ,(mana "b"))
+                  ("{R}" ,(mana "r"))
+                  ("{G}" ,(mana "g"))))
+    (let ((old (car icon))
+          (new (car (cdr icon))))
+      (setq string (replace-regexp-in-string old new string))))
+  string)
 
 (defun company-mtg-match-fuzzy (prefix string &optional ignore-case)
   (cl-subsetp (string-to-list prefix) (string-to-list string)))
@@ -128,4 +139,5 @@ See https://mtgjson.com/."
 
 
 (provide 'company-mtg)
+
 ;;; company-mtg.el ends here
