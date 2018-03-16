@@ -60,7 +60,10 @@ You can set this variable to `company-mtg-match-fuzzy' or define your own functi
 
 ;;;; Functions
 
-;; (require 'lui-format)
+
+(defun company-mtg-format-mana (cost)
+  (format " %s" cost))
+
 (defun company-mtg-annotation-mana (candidate)
   (let* ((cost (get-text-property 0 :cost candidate))
          (result (when cost (company-mtg-format-mana cost))))
