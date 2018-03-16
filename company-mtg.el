@@ -62,8 +62,8 @@ You can set this variable to `company-mtg-match-fuzzy' or define your own functi
 
 ;; (require 'lui-format)
 (defun company-mtg-annotation-mana (candidate)
-  (let* ((mana-cost (get-text-property 0 :mana-cost candidate))
-         (result (when mana-cost (format " %s" mana-cost))))
+  (let* ((cost (get-text-property 0 :cost candidate))
+         (result (when cost (company-mtg-format-mana cost))))
     result))
 
 (defun company-mtg-match-fuzzy (prefix string &optional ignore-case)
@@ -85,7 +85,7 @@ See https://mtgjson.com/."
                            `(:layout
                              ,(cdr (assoc 'layout data))
                              :name ,(cdr (assoc 'name data))
-                             :mana-cost ,(cdr (assoc 'manaCost data))
+                             :cost ,(cdr (assoc 'manaCost data))
                              :cmc ,(cdr (assoc 'cmc data))
                              :colors ,(cdr (assoc 'colors data))
                              :type ,(cdr (assoc 'type data))
@@ -94,8 +94,7 @@ See https://mtgjson.com/."
                              :text ,(cdr (assoc 'text data))
                              :power ,(cdr (assoc 'power data))
                              :toughness ,(cdr (assoc 'toughness data))
-                             :image-name ,(cdr (assoc 'imageName data))
-                             :color-identity ,(cdr (assoc 'layout data)))
+                             :image ,(cdr (assoc 'imageName data)))
                            name)
       (push name company-mtg-candidates)))
   (setq company-mtg-candidates (nreverse company-mtg-candidates))
