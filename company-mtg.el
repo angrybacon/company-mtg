@@ -28,9 +28,10 @@
 ;;; Code:
 
 
-(require 'cl-lib)
+(require 'cl-seq)
 (require 'company)
 (require 'json)
+(require 'mtg)
 
 
 ;;;; Variables
@@ -41,67 +42,74 @@
   :group 'company
   :prefix "company-mtg-")
 
-(defcustom company-mtg-annotation-function 'company-mtg-annotation-mana
-  "The function to use to annotate candidates."
+(defcustom company-mtg-annotate-function 'company-mtg-annotate-mana
+  "The display function to append company annotation at the end of candidates.
+See `company-mtg-annotate-mana' for more details on the implementation of a
+custom function."
   :group 'company-mtg
   :type 'function)
 
-(defcustom company-mtg-data-file "AllCards.json"
+(defcustom company-mtg-data-file (concat mtg-directory "AllCards.json")
   "The file to read data from. Should be a JSON file."
   :group 'company-mtg
-  :type 'string)
+  :type 'file)
 
 (defcustom company-mtg-match-function 'string-prefix-p
   "The matching function to use when finding candidates.
-You can set this variable to `company-mtg-match-fuzzy' or define your own function."
+You can set this variable to `company-mtg-match-fuzzy' or define your own
+function."
   :group 'company-mtg
   :type 'function)
 
 
 ;;;; Functions
 
-
-(defun company-mtg-format-mana (cost)
-  (format " %s" cost))
-
-(defun company-mtg-annotation-mana (candidate)
-  (let* ((cost (get-text-property 0 :cost candidate))
-         (result (when cost (company-mtg-format-mana cost))))
-    result))
+(defun company-mtg-annotate-mana (candidate)
+  (let ((mana (get-text-property 0 :mana candidate)))
+    (when mana (format " %s" mana))))
 
 (defun company-mtg-match-fuzzy (prefix string &optional ignore-case)
   (cl-subsetp (string-to-list prefix) (string-to-list string)))
 
-(defvar company-mtg-candidates nil "Store candidates after fetching cards.")
+
+;;;; Commands
+
+
+(defvar company-mtg-cards nil "Store candidates.")
 
 ;;;###autoload
-(defun company-mtg-load-candidates ()
+(defun company-mtg-load-cards ()
   "Read data from JSON, format it to be company-compatible and store it inside
-`company-mtg-candidates'.
+`company-mtg-cards'.
+
 See https://mtgjson.com/."
   (interactive)
-  (setq company-mtg-candidates nil)
+  (setq company-mtg-cards nil)
   (dolist (card (json-read-file company-mtg-data-file))
     (let ((name (symbol-name (car card)))
           (data (cdr card)))
-      (add-text-properties 0 1
-                           `(:layout
-                             ,(cdr (assoc 'layout data))
-                             :name ,(cdr (assoc 'name data))
-                             :cost ,(cdr (assoc 'manaCost data))
-                             :cmc ,(cdr (assoc 'cmc data))
-                             :colors ,(cdr (assoc 'colors data))
-                             :type ,(cdr (assoc 'type data))
-                             :types ,(cdr (assoc 'types data))
-                             :subtypes ,(cdr (assoc 'subtypes data))
-                             :text ,(cdr (assoc 'text data))
-                             :power ,(cdr (assoc 'power data))
-                             :toughness ,(cdr (assoc 'toughness data))
-                             :image ,(cdr (assoc 'imageName data)))
+      (add-text-properties 0 1 `(:cmc
+                                 ,(cdr (assoc 'cmc data))
+                                 :colors ,(cdr (assoc 'colors data))
+                                 :identity ,(cdr (assoc 'colorIdentity data))
+                                 :layout ,(cdr (assoc 'layout data))
+                                 :mana ,(cdr (assoc 'manaCost data))
+                                 :name ,(cdr (assoc 'name data))
+                                 :power ,(cdr (assoc 'power data))
+                                 :subtypes ,(cdr (assoc 'subtypes data))
+                                 :text ,(cdr (assoc 'text data))
+                                 :toughness ,(cdr (assoc 'toughness data))
+                                 :type ,(cdr (assoc 'type data))
+                                 :types ,(cdr (assoc 'types data)))
                            name)
-      (push name company-mtg-candidates)))
-  (setq company-mtg-candidates (nreverse company-mtg-candidates))
+      (push name company-mtg-cards)))
+  (setq company-mtg-cards (nreverse company-mtg-cards))
   (message "Company-mtg: loaded %s" company-mtg-data-file))
+
+;;;###autoload
+(defun company-mtg-load ()
+  (interactive)
+  (company-mtg-load-cards))
 
 ;;;###autoload
 (defun company-mtg (command &optional argument &rest ignored)
@@ -113,13 +121,11 @@ See https://mtgjson.com/."
     (candidates
      (cl-remove-if-not
       (lambda (c) (funcall company-mtg-match-function argument c t))
-      company-mtg-candidates))
-    (annotation (funcall company-mtg-annotation-function argument))))
+      company-mtg-cards))
+    (annotation (funcall company-mtg-annotate-function argument))))
 
-;; (setq company-mtg-match-function 'string-prefix-p)
-;; (setq company-mtg-match-function 'company-mtg-match-fuzzy)
 ;; (add-to-list 'company-backends 'company-mtg)
-;; (company-mtg-load-candidates)
+
 
 (provide 'company-mtg)
 ;;; company-mtg.el ends here
